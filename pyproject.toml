@@ -1,0 +1,38 @@
+# see https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+[build-system]
+requires = ["setuptools", "setuptools-scm", "ipykernel", "matplotlib", "numpy", "pandas", "tensorboard", "torch", "torchvision"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pathnorm"
+version= "0"
+authors = [
+    {name = "Antoine Gonon", email = "antoine.gonon@ens-lyon.fr"},
+]
+description = "Path-norm of ResNets"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["one", "two"]
+license = {text = "BSD-3-Clause"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "ipykernel",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "tensorboard",
+    "torch",
+    "torchvision",
+    ]
+
+[project.optional-dependencies]
+pdf = []
+rest = []
+
+# [project.scripts]
+# see https://setuptools.pypa.io/en/latest/userguide/entry_point.html#console-scripts
+
+# ... other project metadata fields as specified in:
+#     https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
