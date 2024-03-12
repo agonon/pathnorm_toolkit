@@ -91,7 +91,7 @@ If you decide to recompute the margins of pre-trained ResNets on ImageNet:
 6. Run `bash scripts/1_compute_pretrained_pathnorm_margins_resnets.sh`.
 
 
-### Figure 4 (path-norms of sparse networks)
+## Figure 4 (path-norms of sparse networks)
 
 ### Option 1: Use Pre-computed Results
 - *Time on my machine:* 1 minute 20 seconds.
