@@ -3,7 +3,7 @@
 
 # Before use : set data_dir, saving_dir, batch_size and workers accordingly.
 
-epochs=7
+epochs=90
 lr=0.1
 wd=0.0001
 lr_scheduler=multi-step
