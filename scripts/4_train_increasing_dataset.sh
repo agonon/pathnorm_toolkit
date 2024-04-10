@@ -9,7 +9,7 @@ workers=16
 batch_size=1024
 ############################################################
 
-epochs=1
+epochs=90
 lr=0.1
 wd=0.0001
 lr_scheduler=multi-step
