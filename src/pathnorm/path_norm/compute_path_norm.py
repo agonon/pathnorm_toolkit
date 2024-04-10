@@ -105,10 +105,6 @@ def set_weights_for_path_norm(
                 if exponent != 1:
                     m.bias.data = torch.pow(m.bias.detach(), exponent)
         elif isinstance(m, torch.nn.BatchNorm2d):
-            m.weight.data = torch.abs(m.weight.detach())
-            m.bias.data = torch.abs(m.bias.detach())
-            m.running_mean.data = torch.abs(m.running_mean.detach())
-
             if provide_original_weights:
                 orig_weights[n + ".weight"] = m.weight.detach().clone()
                 orig_weights[n + ".bias"] = m.bias.detach().clone()
@@ -118,6 +114,10 @@ def set_weights_for_path_norm(
                 orig_weights[n + ".running_var"] = (
                     m.running_var.detach().clone()
                 )
+                
+            m.weight.data = torch.abs(m.weight.detach())
+            m.bias.data = torch.abs(m.bias.detach())
+            m.running_mean.data = torch.abs(m.running_mean.detach())
 
             if exponent != 1:
                 m.weight.data = torch.pow(m.weight.detach(), exponent)
