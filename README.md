@@ -1,3 +1,4 @@
+This is the repository associated with the paper [*A path-norm toolkit for modern networks: consequences, promises and challenges*](https://arxiv.org/abs/2310.01225) by [Antoine Gonon](https://agonon.github.io/), [Nicolas Brisebarre](https://perso.ens-lyon.fr/nicolas.brisebarre/index.html.en), [Elisa Riccietti](https://perso.ens-lyon.fr/elisa.riccietti/) and [Rémi Gribonval](https://people.irisa.fr/Remi.Gribonval/), ICLR 2024.
 - [Setup with conda](#setup-with-conda)
 - [Reproduction of the results in [GBRG24]](#reproduction)
 - [Functions of interest](#functions-of-interest)
