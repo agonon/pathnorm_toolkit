@@ -3,20 +3,128 @@ from torch.nn.utils import prune
 
 import copy
 import torch
+import json
 
 
-def replace_maxpool2d_with_conv2d(
-    list_in_out_channels, model, device, in_place=False
-):
+def get_list_models() -> list:
+    """Return list of models that satisfy path-norm toolkit conditions.
+    """
+    try:
+        with open("ok_models.json", 'r') as in_file:
+            ok_models = json.load(in_file)
+        return ok_models.keys()
+    except IOError:
+        raise Exception("Did not find 'ok_models.json' file. " +
+                        "Please run check_models.py script.")
+
+
+def is_model_ok(name) -> bool:
+    """Return True if the model satisfies path-norm toolkit conditions.
+
+    Args:
+        name: str
+        Name of the model
+
+    Return:
+        bool
+    """
+    ok = False
+    try:
+        with open("ok_models.json", 'r') as in_file:
+            ok_models = json.load(in_file)
+            if name in ok_models.keys():
+                ok = True
+        # with open("ok_models.out", 'r') as in_file:
+        #     lines = in_file.readlines()
+        #     for l in lines:
+        #         if l == name:
+        #             ok = True
+        #             break
+    except IOError:
+        raise Exception("Did not find 'ok_models.json' file. " +
+                        "Please run check_models.py script.")
+    return ok
+
+
+def get_in_out_channels(model) -> tuple:
+    """Return in and out channels of the model.
+    Raise an error if model does not satisfy path-norm toolkit conditions.
+
+    Args:
+        model: str
+        Name of the model
+
+    Return:
+        tuple (list of in channels, list of out channels, names)
+
+    Raises:
+        Exception
+            model does not satisfy path-norm toolkit conditions.
+    """
+    try:
+        with open("ok_models.json", 'r') as in_file:
+            ok_models = json.load(in_file)
+            if model not in ok_models.keys():
+                raise Exception("model does not satisfy" +
+                                " path-norm toolkit conditions.")
+            in_channels, out_channels = [], []
+            names = []
+            if "MaxPool2d" in ok_models[model].keys():
+                for k in ok_models[model]["MaxPool2d"].keys():
+                    in_channels.append(
+                        ok_models[model]["MaxPool2d"][k]["in_channels"])
+                    out_channels.append(
+                        ok_models[model]["MaxPool2d"][k]["out_channels"])
+                    names.append(k)
+            return in_channels, out_channels, names
+    except IOError:
+        raise Exception("Did not find 'ok_models.json' file. " +
+                        "Please run check_models.py script.")
+
+
+def get_kernel_shapes(name) -> list:
+    """Return list of kernel shapes
+    (built from AdaptiveAvgPool2d) of the model.
+    Raise an error if model does not satisfy path-norm toolkit conditions.
+
+    Args:
+        name: str
+        Name of the model.
+
+    Return:
+        list
+
+    Raises:
+        Exception
+            model does not satisfy path-norm toolkit conditions.
+    """
+    try:
+        with open("ok_models.json", 'r') as in_file:
+            ok_models = json.load(in_file)
+            if name not in ok_models.keys():
+                raise Exception("model does not satisfy" +
+                                " path-norm toolkit conditions.")
+            kernel_shape = []
+            if "AdaptiveAvgPool2d" in ok_models[name].keys():
+                for k in ok_models[name]["AdaptiveAvgPool2d"].keys():
+                    kernel_shape.append(
+                        ok_models[name][
+                            "AdaptiveAvgPool2d"][k]["kernel_shape"])
+            return kernel_shape
+    except IOError:
+        raise Exception("Did not find 'ok_models.json' file. " +
+                        "Please run check_models.py script.")
+
+
+def replace_maxpool2d_with_conv2d(model, name, device, in_place=False):
     """
     Replace max-pooling layers with convolutional layers with weights constant
     equal to one. Works with the usual ResNet PyTorch class, and it is expected
     to be easily adaptable to work with other architectures.
 
     Args:
-        list_in_out_channels (list): List of tuples representing input and
-        output channels of each max-pooling layer being replaced.
         model (torch.nn.Module): Input model.
+        name (str): Name of the model.
         device (torch.device): Device on which the model should be placed.
         in_place (bool, optional): If True, modify the input model in place.
         If False, create a deep copy of the model and modify the copy.
@@ -31,30 +139,58 @@ def replace_maxpool2d_with_conv2d(
         except Exception as e:
             print(e)
             raise RuntimeError(
-                "Deep copy failed, set 'in_place=True' to run the function with in place modification of the model"
+                "Deep copy failed, set 'in_place=True' to run the" +
+                " function with in place modification of the model"
             )
     else:
         new_model = model
+    # Get a list of in/out channels
+    # List of tuples representing input and
+    # output channels of each max-pooling layer being replaced.
+    in_channels, out_channels, names = get_in_out_channels(name)
     i = 0
-    for n, m in new_model.named_modules():
+    idx = []
+    layer_names = []
+    params = []
+    # Save MaxPool2d info
+    for n, m in model.named_modules():
         if isinstance(m, torch.nn.MaxPool2d):
-            new_model._modules[n] = torch.nn.Conv2d(
-                in_channels=list_in_out_channels[i][0],
-                out_channels=list_in_out_channels[i][1],
-                kernel_size=m.kernel_size,
-                stride=m.stride,
-                padding=m.padding,
-                padding_mode="zeros",
-                dilation=m.dilation,
-                groups=list_in_out_channels[i][0],
-                bias=False,
-                device=device,
-            )
-            new_model._modules[n].weight.data.fill_(1)
-            nb_param = 0
-            for p in new_model._modules[n].parameters():
-                nb_param += p.numel()
+            idx.append(i)
+            layer_names.append(n)
+            params.append([m.kernel_size, m.stride,
+                           m.padding, m.dilation])
+            # print(i, n, m, names[i])
+            assert n == names[i]
             i += 1
+    # Replace each MaxPool2d by Conv2d
+    for i, n, p in zip(idx, layer_names, params):
+        new_model._modules[n] = torch.nn.Conv2d(
+            in_channels=in_channels[i],
+            out_channels=out_channels[i],
+            kernel_size=p[0],
+            stride=p[1],
+            padding=p[2],
+            padding_mode="zeros",
+            dilation=p[3],
+            groups=in_channels[i],
+            bias=False,
+            device=device,
+        )
+        # setattr(new_model, n, torch.nn.Conv2d(
+        #     in_channels=in_channels[i],
+        #     out_channels=out_channels[i],
+        #     kernel_size=p[0],
+        #     stride=p[1],
+        #     padding=p[2],
+        #     padding_mode="zeros",
+        #     dilation=p[3],
+        #     groups=in_channels[i],
+        #     bias=False,
+        #     device=device,
+        # ))
+        new_model._modules[n].weight.data.fill_(1)
+    # from torchinfo import summary
+    # print(summary(new_model, (1, 3, 224, 224)))
     return new_model
 
 
@@ -78,7 +214,8 @@ def set_weights_for_path_norm(
         dict: Original weights of the model if
         `provide_original_weights` is True; otherwise, empty dict.
     """
-    # If a module is pruned, its original weights are in weight_orig instead of weight
+    # If a module is pruned, its original weights
+    # are in weight_orig instead of weight.
     orig_weights = {}
     for n, m in model.named_modules():
         if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Linear):
@@ -114,10 +251,11 @@ def set_weights_for_path_norm(
                 orig_weights[n + ".running_var"] = (
                     m.running_var.detach().clone()
                 )
-                
             m.weight.data = torch.abs(m.weight.detach())
             m.bias.data = torch.abs(m.bias.detach())
             m.running_mean.data = torch.abs(m.running_mean.detach())
+            # Running_var already non-negative,
+            # no need to put it in absolute value
 
             if exponent != 1:
                 m.weight.data = torch.pow(m.weight.detach(), exponent)
@@ -131,56 +269,61 @@ def set_weights_for_path_norm(
     return orig_weights
 
 
-def reset_model(arch, model, orig_weights, in_place=False):
+def reset_model(name, model, orig_weights):
     """
-    Reset weights and maxpool layer of a ResNet.
+    Reset weights and maxpool layer of a model.
 
     Args:
-        arch (str): Architecture of the model. Should be one of 'resnet18',
-        'resnet34', 'resnet50', 'resnet101', 'resnet152'.
+        name (str): Name of the model.
         model (torch.nn.Module): Input model.
         orig_weights (dict): Original weights of the model.
-        in_place (bool, optional): If True, modify the input model in place.
-        Defaults to False.
     """
-    if in_place:
-        for n, m in model.named_modules():
-            if isinstance(m, torch.nn.Conv2d) or isinstance(
-                m, torch.nn.Linear
-            ):
-                if prune.is_pruned(m):
-                    m.weight_orig.data = orig_weights[n + ".weight"]
-                else:
-                    m.weight.data = orig_weights[n + ".weight"]
-                if m.bias is not None:
-                    m.bias.data = orig_weights[n + ".bias"]
-            elif isinstance(m, torch.nn.BatchNorm2d):
-                m.weight.data = orig_weights[n + ".weight"]
-                m.bias.data = orig_weights[n + ".bias"]
-                m.running_mean.data = orig_weights[n + ".running_mean"]
-                m.running_var.data = orig_weights[n + ".running_var"]
-
+    for n, m in model.named_modules():
         if (
-            arch == "resnet18"
-            or arch == "resnet34"
-            or arch == "resnet50"
-            or arch == "resnet101"
-            or arch == "resnet152"
+                isinstance(m, torch.nn.Conv2d) or
+                isinstance(m, torch.nn.Linear)
         ):
-            model.maxpool = torch.nn.MaxPool2d(
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                dilation=1,
-                ceil_mode=False,
-            )
-        else:
-            raise NotImplementedError
+            if prune.is_pruned(m):
+                m.weight_orig.data = orig_weights[n + ".weight"]
+            else:
+                m.weight.data = orig_weights[n + ".weight"]
+            if m.bias is not None:
+                m.bias.data = orig_weights[n + ".bias"]
+        elif isinstance(m, torch.nn.BatchNorm2d):
+            m.weight.data = orig_weights[n + ".weight"]
+            m.bias.data = orig_weights[n + ".bias"]
+            m.running_mean.data = orig_weights[n + ".running_mean"]
+            m.running_var.data = orig_weights[n + ".running_var"]
+
+    if is_model_ok(name):
+        try:
+            with open("ok_models.json", 'r') as in_file:
+                ok_models = json.load(in_file)
+                if name not in ok_models.keys():
+                    raise Exception("model does not satisfy" +
+                                    " path-norm toolkit conditions.")
+                if "MaxPool2d" in ok_models[name].keys():
+                    for k in ok_models[name]["MaxPool2d"].keys():
+                        setattr(model, k,
+                                torch.nn.MaxPool2d(
+                                    kernel_size=0,
+                                    stride=0,
+                                    padding=0,
+                                    dilation=0,
+                                    ceil_mode=False,
+                                ))
+        except IOError:
+            raise Exception("Did not find 'ok_models.json' file. " +
+                            "Please run check_models.py script.")
+    else:
+        raise NotImplementedError(
+            "model has to be in:\n" + get_list_models()
+        )
 
 
 def get_path_norm(
     model,
-    arch,
+    name,
     device,
     exponent=1,
     constant_input=1,
@@ -199,8 +342,7 @@ def get_path_norm(
 
     Args:
         model (torch.nn.Module): Input model.
-        arch (str): Architecture of the model. Should be one of 'resnet18',
-        'resnet34', 'resnet50', 'resnet101', 'resnet152'.
+        name (str): Name of the model.
         device (torch.device): Device on which the model should be placed.
         exponent (float, optional): Exponent for weight transformation.
         Defaults to 1.
@@ -216,25 +358,22 @@ def get_path_norm(
     # reapply it afterwards by pruning amount=0 # since this would lose the
     # masks
 
-    if (
-        arch == "resnet18"
-        or arch == "resnet34"
-        or arch == "resnet50"
-        or arch == "resnet101"
-        or arch == "resnet152"
-    ):
-        number_antecedents_average_pool = 7 * 7
-        weights_average_pool = 1 / number_antecedents_average_pool
-        list_in_out_channels = [(64, 64)]
+    if is_model_ok(name):
+        kernel_shapes = get_kernel_shapes(name)
+        weights_average_pool = 1.0
+        for k in kernel_shapes:
+            number_antecedents_average_pool = k[0] * k[1]
+            weights_average_pool *= 1.0 / number_antecedents_average_pool
     else:
-        raise ValueError(
-            "arch should be one of resnet18, resnet34, resnet50, resnet101, resnet152"
+        raise NotImplementedError(
+            "model has to be in:\n" + str(get_list_models())
         )
 
-    # 1. Modify the model (in_place or not): replace max-pooling-neurons with identity ones (as prescribed in Theorem A.1 of https://arxiv.org/abs/2310.01225).
-
+    # 1. Modify the model (in_place or not): replace max-pooling-neurons
+    # with identity ones as prescribed in Theorem A.1
+    # of https://arxiv.org/abs/2310.01225.
     new_model = replace_maxpool2d_with_conv2d(
-        list_in_out_channels, model, device, in_place=in_place
+        model, name, device, in_place=in_place
     )
 
     # 2. Set all the weights w to |w|^exponent.
@@ -243,29 +382,33 @@ def get_path_norm(
     )
 
     # 3. Compute the path norm of the model with constant input equal to one.
-
     new_model.eval()
     batch_size = 1
     input_size = (batch_size, 3, 224, 224)
     x = constant_input * torch.ones(input_size)
     x = x.to(device)
     with torch.no_grad():
-        path_norm = torch.pow(new_model(x).sum(), 1 / exponent).item()
-        path_norm *= weights_average_pool ** (exponent - 1)
+        try:
+            path_norm = torch.pow(new_model(x).sum(), 1 / exponent).item()
+            path_norm *= weights_average_pool ** (exponent - 1)
+        except AttributeError:
+            path_norm = torch.pow(
+                new_model(x)['out'].sum(), 1 / exponent).item()
+            path_norm *= weights_average_pool ** (exponent - 1)
 
     # 4. Reset the model to its original state.
-    reset_model(arch, model, orig_weights, in_place=in_place)
+    if in_place:
+        reset_model(name, model, orig_weights)
     return path_norm
 
 
-def compute_path_norms(model, arch, exponents, device, data_parallel):
+def compute_path_norms(model, name, exponents, device, data_parallel):
     """
     Compute path-norms for different exponents of a ResNet model.
 
     Args:
         model (torch.nn.Module): The ResNet model.
-        arch (str): Architecture of the model. Should be one of 'resnet18',
-        'resnet34', 'resnet50', 'resnet101', 'resnet152'.
+        name (str): Name of the model.
         exponents (list): List of exponents for computing path-norms.
         device (torch.device): Device on which the model should be placed.
         data_parallel (bool): If True, the model is parallelized using
@@ -283,13 +426,15 @@ def compute_path_norms(model, arch, exponents, device, data_parallel):
 
     if data_parallel:
         raise ValueError(
-            "Data parallelism is not supported yet for the computation of path-norm. A special treatment would be needed to replace the maxpool layer with a conv layer."
+            "Data parallelism is not supported yet for the computation of" +
+            " path-norm. A special treatment would be needed to replace" +
+            " the maxpool layer with a conv layer."
         )
 
     for exponent in exponents:
         path_norm = get_path_norm(
             model,
-            arch,
+            name,
             device,
             exponent=exponent,
         )
