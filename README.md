@@ -143,10 +143,10 @@ To generate plots with your new results, open `scripts/5_plot_increasing_dataset
 
 Here are key functions within the project:
 
-- **Computing the Path-Norm of a ResNet:**
+- **Computing the Path-Norm of a model (see [ok_models.json](https://github.com/agonon/pathnorm_toolkit/blob/main/ok_models.json) for valid ones):**
   - Function: `get_path_norm`
   - Location: `src/pathnorm/path_norm/compute_path_norm.py`
-  - Example of use: refer to `src/pathnorm/path_norm/pathnorm_and_margins_pretrained_resnets.py`
+  - Example of use: refer to `scripts/compute_path_norm_models.py`
 
 - **Computing the First Part of the Bound of Theorem 3.1 in [GBRG24](#GBRG24) for a ResNet:**
   - Script: `src/pathnorm/path_norm/compute_1st_part_bound_resnets.py`
