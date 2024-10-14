@@ -39,7 +39,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.12": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 256,
     "in": [
@@ -79,7 +79,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "backbone.maxpool": {
+   "classifier.0.convs.4.0": {
     "name": "classifier.0.convs.4.0",
     "in_channels": 256,
     "in": [
@@ -119,7 +119,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "backbone.maxpool": {
+   "classifier.0.convs.4.0": {
     "name": "classifier.0.convs.4.0",
     "in_channels": 256,
     "in": [
@@ -203,7 +203,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 192,
     "in": [
@@ -233,7 +233,7 @@
  "mnasnet1_3": {},
  "regnet_x_16gf": {
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 2048,
     "in": [
@@ -259,7 +259,7 @@
  },
  "regnet_x_1_6gf": {
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 912,
     "in": [
@@ -285,7 +285,7 @@
  },
  "regnet_x_32gf": {
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 2520,
     "in": [
@@ -311,7 +311,7 @@
  },
  "regnet_x_3_2gf": {
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 1008,
     "in": [
@@ -337,7 +337,7 @@
  },
  "regnet_x_400mf": {
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 400,
     "in": [
@@ -363,7 +363,7 @@
  },
  "regnet_x_800mf": {
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 672,
     "in": [
@@ -389,7 +389,7 @@
  },
  "regnet_x_8gf": {
   "AdaptiveAvgPool2d": {
-   "maxpool2": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 1920,
     "in": [
@@ -429,7 +429,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -469,7 +469,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -509,7 +509,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -549,7 +549,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -589,7 +589,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -629,7 +629,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 2048,
     "in": [
@@ -669,7 +669,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 2048,
     "in": [
@@ -709,7 +709,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 1024,
     "in": [
@@ -773,7 +773,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.11": {
+   "classifier.3": {
     "name": "classifier.3",
     "in_channels": 1000,
     "in": [
@@ -837,7 +837,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.8": {
+   "classifier.3": {
     "name": "classifier.3",
     "in_channels": 1000,
     "in": [
@@ -925,7 +925,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.20": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1013,7 +1013,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.28": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1101,7 +1101,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.24": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1189,7 +1189,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.34": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1277,7 +1277,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.30": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1365,7 +1365,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.43": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1453,7 +1453,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.36": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1541,7 +1541,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "features.52": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 512,
     "in": [
@@ -1581,7 +1581,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 1024,
     "in": [
@@ -1621,7 +1621,7 @@
    }
   },
   "AdaptiveAvgPool2d": {
-   "maxpool": {
+   "avgpool": {
     "name": "avgpool",
     "in_channels": 1024,
     "in": [

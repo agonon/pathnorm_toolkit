@@ -317,6 +317,7 @@ def main():
                 data["layers"][layer_name]["instance"],
                 torch.nn.AdaptiveAvgPool2d,
             ):
+                tmp_name = data['layers'][layer_name]['name']
                 if name not in ok_models.keys():
                     ok_models[name] = {}
                 if "AdaptiveAvgPool2d" not in ok_models[name].keys():
