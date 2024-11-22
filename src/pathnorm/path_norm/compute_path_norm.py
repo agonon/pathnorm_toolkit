@@ -303,13 +303,13 @@ def reset_model(name, model, orig_weights):
                     raise Exception("model does not satisfy" +
                                     " path-norm toolkit conditions.")
                 if "MaxPool2d" in ok_models[name].keys():
-                    for k in ok_models[name]["MaxPool2d"].keys():
+                    for k, v in ok_models[name]["MaxPool2d"].items():
                         setattr(model, k,
                                 torch.nn.MaxPool2d(
-                                    kernel_size=0,
-                                    stride=0,
-                                    padding=0,
-                                    dilation=0,
+                                    kernel_size=v["reset"]["kernel_size"],
+                                    stride=v["reset"]["kernel_size"],
+                                    padding=v["reset"]["kernel_size"],
+                                    dilation=v["reset"]["kernel_size"],
                                     ceil_mode=False,
                                 ))
         except IOError:
