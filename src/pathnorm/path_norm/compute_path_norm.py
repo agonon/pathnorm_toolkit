@@ -389,8 +389,11 @@ def get_path_norm(
     x = x.to(device)
     with torch.no_grad():
         try:
-            path_norm = torch.pow(new_model(x).sum(), 1 / exponent).item()
-            path_norm *= weights_average_pool ** (exponent - 1)
+            if exponent != 0:
+                path_norm = torch.pow(new_model(x).sum(), 1 / exponent).item()
+                path_norm *= weights_average_pool ** (exponent - 1)
+            else:
+                path_norm = new_model(x).sum().item()
         except AttributeError:
             path_norm = torch.pow(
                 new_model(x)['out'].sum(), 1 / exponent).item()
